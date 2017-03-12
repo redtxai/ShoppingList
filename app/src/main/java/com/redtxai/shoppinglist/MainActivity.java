@@ -1,5 +1,6 @@
 package com.redtxai.shoppinglist;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -19,6 +20,7 @@ import android.widget.TextView;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
+    private static final int REQUEST_ITEM = 0;
     private LinearLayout mainContainer;
     private FloatingActionButton btnAddItem;
 
@@ -34,7 +36,6 @@ public class MainActivity extends AppCompatActivity
         }
 
         this.btnAddItem = (FloatingActionButton) findViewById(R.id.add_item);
-
         this.btnAddItem.setOnClickListener(this.getBtnAddClickEvent());
     }
 
@@ -100,9 +101,21 @@ public class MainActivity extends AppCompatActivity
         {
             public void onClick(View v)
             {
-                MainActivity.this.mainContainer.addView(MainActivity.this.getTextView("teste"));
+                Intent it = new Intent(getApplicationContext(), ItemActivity.class);
+                startActivityForResult(it, REQUEST_ITEM);
             }
         };
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_ITEM && resultCode == Activity.RESULT_OK) {
+            String itemName = data.getStringExtra("name");
+            String itemBrand = data.getStringExtra("brand");
+            String itemAmount = data.getStringExtra("amount");
+
+            this.mainContainer.addView(this.getTextView(itemBrand + " " + itemName + " " + itemAmount));
+        }
     }
 
     private TextView getTextView(String text) {
