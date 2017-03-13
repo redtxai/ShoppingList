@@ -28,5 +28,4 @@
                 android:value="com.redtxai.shoppinglist.ItemActivity" />
         </activity>
     </application>
-
 </manifest>
