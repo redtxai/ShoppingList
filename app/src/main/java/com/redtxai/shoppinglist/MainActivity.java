@@ -17,6 +17,14 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.redtxai.shoppinglist.DAO.ItemListManager;
+import com.redtxai.shoppinglist.model.Item;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import static android.R.attr.data;
 
@@ -25,16 +33,28 @@ public class MainActivity extends AppCompatActivity
 
     private static final int REQUEST_ITEM = 0;
     private LinearLayout mainContainer;
+    private List<Item> itemList;
+    private ItemListManager itemListManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        try {
+            this.itemListManager = new ItemListManager(this);
+            this.itemList = this.itemListManager.getItemList();
+        } catch (IOException e) {}
+
+
         this.mainContainer = (LinearLayout) findViewById(R.id.main_container);
 
-        if (this.mainContainer.getChildCount() <= 0) {
+        if (this.itemList.isEmpty()) {
             this.mainContainer.addView(this.getTextView("It's empty."));
+        } else {
+            for (int i = 0 ; i <= (this.itemList.size()-1) ; i++) {
+                this.mainContainer.addView(this.getTextView(this.itemList.get(i).toString()));
+            }
         }
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -77,11 +97,15 @@ public class MainActivity extends AppCompatActivity
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
+
+        try {
+            this.itemListManager.saveItemList(this.itemList);
+        } catch (IOException e) {}
+
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
 
@@ -116,11 +140,12 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_ITEM && resultCode == Activity.RESULT_OK) {
-            String itemName = data.getStringExtra("name");
-            String itemBrand = data.getStringExtra("brand");
-            String itemAmount = data.getStringExtra("amount");
-
-            this.mainContainer.addView(this.getTextView(itemBrand + " " + itemName + " " + itemAmount));
+            Item item = new Item(data.getStringExtra("name")
+                                ,data.getStringExtra("brand")
+                                ,Integer.parseInt(data.getStringExtra("amount")));
+            item.setId(this.itemListManager.getIdControl());
+            this.itemList.add(item);
+            this.mainContainer.addView(this.getTextView(item.toString()));
         }
     }
 
